@@ -1,5 +1,6 @@
 package com.ss.microservice.user.entity;
 
+import com.ss.microservice.user.vo.UserVO;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -16,4 +17,14 @@ public class User {
   private String lastname;
   private String email;
   private Long departmentId;
+
+  public UserVO toVO() {
+    UserVO vo = new UserVO();
+    vo.setId(id);
+    vo.setFirstname(firstname);
+    vo.setLastname(lastname);
+    vo.setEmail(email);
+
+    return vo;
+  }
 }

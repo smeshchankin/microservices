@@ -31,11 +31,7 @@ public class UserService {
   public Optional<UserVO> getUserWithDepartment(Long id) {
     return repository.findById(id)
       .map(user -> {
-        UserVO vo = new UserVO();
-        vo.setId(user.getId());
-        vo.setFirstname(user.getFirstname());
-        vo.setLastname(user.getLastname());
-        vo.setEmail(user.getEmail());
+        UserVO vo = user.toVO();
 
         String url = DEPARTMENTS_URL + user.getDepartmentId();
         DepartmentVO department = rest.getForObject(url, DepartmentVO.class);
