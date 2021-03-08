@@ -10,7 +10,7 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class UserService {
-  private static final String DEPARTMENTS_URL = "http://localhost:9001/departments/";
+  private static final String DEPARTMENTS_URL = "http://DEPARTMENT-SERVICE/departments/";
 
   private final UserRepository repository;
   private final RestTemplate rest;
