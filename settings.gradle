@@ -2,3 +2,4 @@ rootProject.name = 'microservices-sandbox'
 
 include 'department'
 include 'user'
+include 'registry'

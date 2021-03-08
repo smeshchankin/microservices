@@ -1,2 +1,2 @@
-#Microservices / User
-An example of microservices : User
+#Microservices / Registry
+An example of microservices : Registry with Eureka
