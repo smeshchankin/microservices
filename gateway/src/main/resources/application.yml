@@ -34,6 +34,12 @@ hystrix:
           thread:
             timeoutInMilliseconds: 4000
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream
+
 eureka:
   client:
     register-with-eureka: true
