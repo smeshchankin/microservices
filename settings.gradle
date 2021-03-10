@@ -3,5 +3,6 @@ rootProject.name = 'microservices-sandbox'
 include 'department'
 include 'user'
 
-include 'registry'
 include 'gateway'
+include 'registry'
+include 'hystrix-dashboard'

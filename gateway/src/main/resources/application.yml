@@ -24,7 +24,7 @@ spring:
             - name: CircuitBreaker
               args:
                 name: DEPARTMENT-SERVICE
-                fallbackuri: forward:/users/department-back
+                fallbackuri: forward:/departments/fall-back
 
 hystrix:
   command:
