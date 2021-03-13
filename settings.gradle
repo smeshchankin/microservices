@@ -4,6 +4,7 @@ include 'department'
 include 'user'
 
 include 'config'
+include 'session'
 include 'gateway'
 include 'registry'
 include 'hystrix-dashboard'
