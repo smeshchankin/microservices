@@ -3,52 +3,65 @@ package com.ss.microservice.session.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Set;
+import com.ss.microservice.session.SessionApplication;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.api.sync.RedisCommands;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import redis.clients.jedis.Jedis;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = SessionApplication.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 public class SessionControllerTest {
   private static final String USERNAME = "admin";
   private static final String PASSWORD = "password";
 
-  private Jedis redis;
+  RedisCommands<String, String> syncCommand;
   private TestRestTemplate rest;
   private TestRestTemplate restWithAuth;
-  private String url = "http://localhost:8080";
+
+  @LocalServerPort
+  private int port;
 
   @BeforeEach
   public void clearRedisData() {
     rest = new TestRestTemplate();
     restWithAuth = new TestRestTemplate(USERNAME, PASSWORD);
-    redis = new Jedis("localhost", 6379);
-    redis.flushAll();
+
+    RedisClient redis = RedisClient.create("redis://localhost:6379");
+    syncCommand = redis.connect().sync();
+    syncCommand.flushall();
   }
 
   @Test
   public void testRedisIsEmpty() {
-    Set<String> result = redis.keys("*");
+    List<String> result = syncCommand.keys("*");
     assertEquals(0, result.size());
   }
 
   @Test
   public void testUnauthenticatedCantAccess() {
-    ResponseEntity<String> result = this.rest.getForEntity(url, String.class);
+    ResponseEntity<String> result = this.rest.getForEntity(getUrl(), String.class);
     assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
   }
 
   @Test
   public void testRedisControlsSession() {
-    ResponseEntity<String> result = restWithAuth.getForEntity(url, String.class);
+    ResponseEntity<String> result = restWithAuth.getForEntity(getUrl(), String.class);
     assertEquals("Hello Admin", result.getBody());
 
-    Set<String> redisResult = redis.kes("*");
+    List<String> redisResult = syncCommand.keys("*");
     assertTrue(redisResult.size() > 0);
 
     String sessionCookie = result.getHeaders().get("Set-Cookie").get(0).split(";")[0];
@@ -56,12 +69,16 @@ public class SessionControllerTest {
     headers.add("Cookie", sessionCookie);
     HttpEntity<String> httpEntity = new HttpEntity<>(headers);
 
-    result = rest.exchange(url, HttpMethod.GET, httpEntity, String.class);
+    result = rest.exchange(getUrl(), HttpMethod.GET, httpEntity, String.class);
     assertEquals("Hello Admin", result.getBody());
 
-    redis.flushAll();
+    syncCommand.flushall();
 
-    result = rest.exchange(url, HttpMethod.GET, httpEntity, String.class);
+    result = rest.exchange(getUrl(), HttpMethod.GET, httpEntity, String.class);
     assertEquals(HttpStatus.UNAUTHORIZED, result.getStatusCode());
+  }
+
+  private String getUrl() {
+    return "http://localhost:" + port;
   }
 }
